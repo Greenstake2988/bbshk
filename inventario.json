@@ -1,0 +1,7 @@
+{
+  "1": { "nombre": "Esteban", "cantidad": 2, "precio": 2.0 },
+  "2": { "nombre": "Ernesto", "cantidad": 50, "precio": 45.0 },
+  "3": { "nombre": "Oscar", "cantidad": 10, "precio": 45.0 },
+  "4": { "nombre": "Sofia ", "cantidad": 10, "precio": 40.0 },
+  "5": { "nombre": "Dante", "cantidad": 10, "precio": 34.0 }
+}

@@ -1,12 +1,25 @@
 
 (require '[clojure.string :as str]
-         '[babashka.pods :as pods])
+         '[cheshire.core :as json])
 
-(pods/load-pod 'org.babashka/mysql "0.0.8")
-(require '[pod.babashka.mysql :as mysql])
+(def archivo "inventario.json")
 
 (def inventario (atom {}))
 (def next-id (atom 0))
+
+(defn guardar []
+  (spit archivo (json/generate-string @inventario)))
+
+(defn cargar []
+  (when (.exists (java.io.File. archivo))
+    (let [raw (json/parse-string (slurp archivo) true) ;; keys como keywords
+          parsed (into {}
+                       (map (fn [[k v]]
+                              [(Integer/parseInt (name k)) v])
+                            raw))]
+      (reset! inventario parsed)
+      (reset! next-id (apply max (keys @inventario)))
+      (println "Inventario cargado:" @inventario))))
 
 (defn leer-linea []
   (flush)
@@ -84,6 +97,7 @@
   (println "Elige una opcion: "))
 
 (defn -main []
+  (cargar) ;; leemos el archivo en disco
   (loop []
     (menu)
     (let [opcion (leer-linea)]
@@ -96,6 +110,7 @@
                 (if (and cantidad precio)
                   (agregar-item nombre cantidad precio)
                   (println "Error: cantidad o precio invalido. Intenta nuevamente.")))
+              (guardar)
               (recur))
         "2" (do
               (print "ID del item a eliminar: ")
@@ -106,9 +121,11 @@
                 (if id
                   (eliminar-item id)
                   (println "ID invalido")))
+              (guardar)
               (recur))
         "3" (do
               (mostrar-inventario)
+              (guardar)
               (recur))
         "4" (do
               (print "ID del item a actualizar: ")
@@ -119,10 +136,12 @@
                 (if id
                   (editar-item id)
                   (println "ID invalido")))
+              (guardar)
               (recur))
         "5" (println "Saliendo...")
         (do
           (println "Opcion invalida")
+          (guardar)
           (recur))))))
 
 ;; Ejecutar si se corre como script
